@@ -6,68 +6,35 @@
 > Uma ferramenta interativa para estimar, visualizar e compreender o impacto ambiental dos seus deslocamentos diários.
 
 ---
+# 🌍 Calculadora de Emissões de CO₂
 
-## 📖 Sobre o Projeto
+Aplicação web interativa que estima o impacto ambiental de deslocamentos urbanos, transformando dados de emissão de CO₂ em informações visuais e educativas.
 
-A **Calculadora de Emissões de CO₂** é uma aplicação web moderna e responsiva que vai além dos números. O objetivo não é apenas calcular quilogramas de dióxido de carbono, mas traduzir esses dados abstratos em **contexto visual e emocional**.
+## 🎯 Objetivo
+Conscientizar usuários sobre o impacto ambiental de diferentes meios de transporte, apresentando os resultados de forma clara, visual e acessível.
 
-Através de comparações gráficas, equivalência em árvores e feedback visual imediato (gamificação), a ferramenta ajuda os usuários a tomarem decisões de transporte mais conscientes e sustentáveis.
+## 🚀 Funcionalidades
+- Cálculo de emissões de CO₂ por meio de transporte
+- Comparação visual com gráficos interativos
+- Conversão do impacto em equivalência ambiental (árvores)
+- Feedback visual e gamificação para escolhas sustentáveis
+- Interface moderna e responsiva
 
----
+## 🧪 Tecnologias Utilizadas
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
+- Chart.js
+- GitHub Copilot
 
-## ✨ Funcionalidades Principais
+## 🤖 Uso de Inteligência Artificial
+O GitHub Copilot foi utilizado como assistente no desenvolvimento da lógica de cálculo, estruturação dos gráficos e otimização da interface, acelerando o processo de criação do projeto.
 
-*   **Cálculo Preciso**: Estimativas baseadas em fatores de emissão médios para Carro, Moto, Ônibus, Avião e Trem/Metrô.
-*   **Visualização de Dados**:
-    *   📊 **Gráficos Comparativos**: Veja como sua escolha se compara a outras opções (Chart.js).
-    *   🍩 **Análise de Impacto**: Entenda a proporção entre a distância percorrida e o número de passageiros.
-*   **Contextualização (Fator "Wow")**:
-    *   🌲 **Equivalência em Árvores**: Descubra quantas árvores são necessárias para compensar sua viagem.
-    *   🎉 **Gamificação**: Feedback positivo (confetes) para escolhas de baixo impacto.
-*   **Exportação**: Baixe seu resultado como uma imagem PNG profissional para compartilhar nas redes sociais.
-*   **Interface Moderna**: Design limpo, responsivo e com suporte a tema nativo mobile.
+## 📄 Como Executar
+Basta abrir o arquivo `index.html` em um navegador moderno.
 
----
-
-## 🛠️ Tecnologias Utilizadas
-
-O projeto foi construído com tecnologias web padrão, garantindo leveza e compatibilidade.
-
-*   **Core**: HTML5, CSS3 (Variáveis, Flexbox, Grid), JavaScript (ES6+).
-*   **Bibliotecas**:
-    *   [Chart.js](https://www.chartjs.org/) - Para gráficos interativos e animados.
-    *   [html2canvas](https://html2canvas.hertzen.com/) - Para captura de tela e download dos resultados.
-    *   [canvas-confetti](https://github.com/catdad/canvas-confetti) - Para efeitos visuais de celebração.
-    *   [FontAwesome](https://fontawesome.com/) - Para iconografia moderna.
-
----
-
-## 🚀 Como Executar
-
-Este é um projeto estático, o que significa que você pode rodá-lo diretamente em seu navegador sem instalar dependências complexas.
-
-1.  **Baixe ou Clone** o repositório.
-2.  **Abra o arquivo** `index.html` em qualquer navegador moderno (Chrome, Firefox, Edge).
-3.  **Use a calculadora**:
-    *   Informe a distância e passageiros.
-    *   Selecione o transporte.
-    *   Clique em "Calcular" e veja a mágica acontecer!
-
----
-
-## ⚙️ Personalização
-
-Os cálculos são baseados em estimativas médias globais. Para adaptar o projeto à sua realidade local, edite o arquivo `script.js` e ajuste a variável `factor` dentro do `switch(transport)`.
-
-## 📂 Estrutura de Arquivos
-
-```text
-co2-calculator/
-├── index.html      # Estrutura, importação de libs e layout
-├── styles.css      # Estilização, temas, animações e responsividade
-├── script.js       # Lógica de cálculo, manipulação do DOM e gráficos
-└── readme.md       # Documentação do projeto
-```
+## 🌱 Impacto Educacional
+O projeto traduz dados técnicos em informações compreensíveis, incentivando escolhas mais sustentáveis no dia a dia.
 
 <div align="center">
   <sub>Desenvolvido com foco em UX e Sustentabilidade. 🌱</sub>
