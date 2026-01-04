@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de Emissões de CO₂</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#16a34a">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <h1><i class="fa-solid fa-leaf"></i> Calculadora de CO₂</h1>
+    <p>Estimativa rápida de emissões geradas por deslocamentos de carro ou ônibus.</p>
+
+    <form id="calcForm">
+      <div class="input-group">
+        <label for="distance"><i class="fa-solid fa-route"></i> Distância (km)</label>
+        <input type="number" id="distance" min="0" step="0.1" placeholder="Ex: 15.5" required />
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="roundTrip" />
+        <label for="roundTrip">Ida e volta (x2)</label>
+      </div>
+
+      <div class="input-group">
+        <label for="passengers"><i class="fa-solid fa-users"></i> Passageiros</label>
+        <input type="number" id="passengers" min="1" step="1" value="1" required />
+      </div>
+
+      <label for="transport"><i class="fa-solid fa-car-side"></i> Transporte</label>
+      <select id="transport">
+        <option value="carro">Carro</option>
+        <option value="onibus">Ônibus</option>
+        <option value="moto">Motocicleta</option>
+        <option value="aviao">Avião (Curta distância)</option>
+        <option value="trem">Trem / Metrô</option>
+      </select>
+
+      <div class="button-group">
+        <button type="submit" id="calculate">Calcular</button>
+        <button type="reset" id="reset" class="secondary">Limpar</button>
+      </div>
+    </form>
+
+    <div id="captureArea">
+      <section id="result" class="result" aria-live="polite"></section>
+
+      <!-- Nova seção para comparações visuais (Fator WOW) -->
+      <section id="comparison" class="comparison hidden">
+        <h3>Impacto Equivalente:</h3>
+        <div id="tree-equivalent" class="icon-stat"></div>
+      </section>
+
+      <!-- Gráfico de comparação -->
+      <div class="chart-container hidden" id="chartSection">
+        <canvas id="comparisonChart"></canvas>
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px dashed #e5e7eb;">
+          <h4 style="text-align: center; margin: 0 0 16px; color: #6b7280; font-size: 0.9rem;">Composição do Impacto</h4>
+          <div style="max-width: 280px; margin: 0 auto;">
+            <canvas id="breakdownChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="downloadBtn" class="secondary hidden" style="margin-top: 20px; width: 100%;">
+      <i class="fa-solid fa-download"></i> Baixar Resultado
+    </button>
+
+    <small class="note">Fatores de emissão são estimativas; ajuste em <code>script.js</code> conforme necessário.</small>
+    
+    <footer style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 0.85rem;">
+      <p>🌱 Pequenas mudanças, grande impacto.</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
