@@ -1,7 +1,6 @@
 # 🌱 Calculadora de Emissões de CO₂
 
 ![Status](https://img.shields.io/badge/Status-Concluído-success)
-![License](https://img.shields.io/badge/License-MIT-blue)
 ![Tech](https://img.shields.io/badge/Tech-HTML%20%7C%20CSS%20%7C%20JS-yellow)
 
 > Uma ferramenta interativa para estimar, visualizar e compreender o impacto ambiental dos seus deslocamentos diários.
