@@ -42,6 +42,10 @@ O projeto foi construído com tecnologias web padrão, garantindo leveza e compa
 
 ---
 
+## 🤖 Uso de Inteligência Artificial
+O GitHub Copilot foi utilizado como assistente no desenvolvimento da lógica de cálculo, estruturação dos gráficos e otimização da interface, acelerando o processo de criação do projeto.
+
+
 ## 🚀 Como Executar
 
 Este é um projeto estático, o que significa que você pode rodá-lo diretamente em seu navegador sem instalar dependências complexas.
