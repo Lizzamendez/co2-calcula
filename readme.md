@@ -1,5 +1,4 @@
 # 🌱 Calculadora de Emissões de CO₂
-
 Qual é o impacto ambiental da sua escolha de transporte?
 
 ![Status](https://img.shields.io/badge/Status-Concluído-success)
