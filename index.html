@@ -6,6 +6,8 @@
   <title>Calculadora de Emissões de CO₂</title>
   <link rel="stylesheet" href="styles.css" />
   <meta name="theme-color" content="#16a34a">
+  <!-- Favicon usando un emoji SVG (sin archivos extra) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -14,12 +16,19 @@
 <body>
   <main class="container">
     <h1><i class="fa-solid fa-leaf"></i> Calculadora de CO₂</h1>
+    <div class="header-top">
+      <h1><i class="fa-solid fa-leaf"></i> Calculadora</h1>
+      <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+    </div>
     <p>Estimativa rápida de emissões geradas por deslocamentos de carro ou ônibus.</p>
 
     <form id="calcForm">
       <div class="input-group">
         <label for="distance"><i class="fa-solid fa-route"></i> Distância (km)</label>
         <input type="number" id="distance" min="0" step="0.1" placeholder="Ex: 15.5" required />
+        <span id="distanceError" class="error-message">Por favor, insira uma distância válida (maior que 0).</span>
       </div>
 
       <div class="checkbox-group">
@@ -34,11 +43,7 @@
 
       <label for="transport"><i class="fa-solid fa-car-side"></i> Transporte</label>
       <select id="transport">
-        <option value="carro">Carro</option>
-        <option value="onibus">Ônibus</option>
-        <option value="moto">Motocicleta</option>
-        <option value="aviao">Avião (Curta distância)</option>
-        <option value="trem">Trem / Metrô</option>
+        <option value="" disabled selected>Carregando opções...</option>
       </select>
 
       <div class="button-group">
@@ -71,6 +76,24 @@
     <button id="downloadBtn" class="secondary hidden" style="margin-top: 20px; width: 100%;">
       <i class="fa-solid fa-download"></i> Baixar Resultado
     </button>
+
+    <!-- Sección de Historial -->
+    <section id="historySection" class="history-section hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;"><i class="fa-solid fa-clock-rotate-left"></i> Histórico Recente</h3>
+        <button id="clearHistoryBtn" class="secondary" style="padding: 4px 12px; font-size: 0.8rem;">Limpar</button>
+      </div>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Transp.</th>
+            <th>CO₂</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
 
     <small class="note">Fatores de emissão são estimativas; ajuste em <code>script.js</code> conforme necessário.</small>
     

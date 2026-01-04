@@ -49,14 +49,22 @@ O GitHub Copilot foi utilizado como assistente no desenvolvimento da lógica de 
 
 ## 🚀 Como Executar
 
-Este é um projeto estático, o que significa que você pode rodá-lo diretamente em seu navegador sem instalar dependências complexas.
+Este projeto utiliza um **Backend em Node.js**. Você precisa ter o [Node.js](https://nodejs.org/) instalado.
 
-1.  **Baixe ou Clone** o repositório.
-2.  **Abra o arquivo** `index.html` em qualquer navegador moderno (Chrome, Firefox, Edge).
-3.  **Use a calculadora**:
-    *   Informe a distância e passageiros.
-    *   Selecione o transporte.
-    *   Clique em "Calcular" e veja a mágica acontecer!
+1.  **Instale as dependências**:
+    ```bash
+    npm install
+    ```
+2.  **Inicie o servidor**:
+    ```bash
+    npm start
+    ```
+    Ou para desenvolvimento (reinício automático):
+    ```bash
+    npm run dev
+    ```
+3.  **Acesse no navegador**:
+    Abra `http://localhost:3000`
 
 ---
 

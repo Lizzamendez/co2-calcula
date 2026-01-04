@@ -1,15 +1,50 @@
 let myChart = null;
 let myPieChart = null;
+let transportConfig = {}; // Almacenará la info del backend
+let isAutoReset = false; // Bandera para controlar el reset automático
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Carregar a última seleção de transporte salva
-  const lastTransport = localStorage.getItem('lastTransport');
-  if (lastTransport) {
-    document.getElementById('transport').value = lastTransport;
+document.addEventListener('DOMContentLoaded', async () => {
+  // 0. Inicializar Tema
+  initTheme();
+  // 0.1 Cargar Historial
+  renderHistory();
+
+  const select = document.getElementById('transport');
+  
+  try {
+    // 1. Cargar opciones desde el Backend
+    const response = await fetch('/api/transports');
+    transportConfig = await response.json();
+    
+    select.innerHTML = ''; // Limpiar "Cargando..."
+    
+    for (const [key, data] of Object.entries(transportConfig)) {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = data.label;
+      select.appendChild(option);
+    }
+
+    // 2. Restaurar última selección
+    const lastTransport = localStorage.getItem('lastTransport');
+    if (lastTransport && transportConfig[lastTransport]) {
+      select.value = lastTransport;
+    }
+  } catch (error) {
+    select.innerHTML = '<option>Erro ao carregar</option>';
+    console.error("Error cargando transportes:", error);
   }
+
+  // Listener para limpar erro ao digitar
+  document.getElementById('distance').addEventListener('input', function() {
+    this.classList.remove('error');
+    document.getElementById('distanceError').classList.remove('visible');
+  });
 });
 
 document.getElementById('calcForm').addEventListener('reset', () => {
+  if (isAutoReset) return; // Si es reset automático, no ocultar resultados
+
   // Ocultar resultados, comparações e gráfico ao limpar
   document.getElementById('result').classList.remove('show');
   document.getElementById('comparison').classList.add('hidden');
@@ -26,11 +61,16 @@ document.getElementById('calcForm').addEventListener('reset', () => {
   }
 });
 
-document.getElementById('calcForm').addEventListener('submit', function(e) {
+document.getElementById('calcForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
+  const submitBtn = document.getElementById('calculate');
+  const originalText = submitBtn.innerHTML;
+
   // 1. Obter valores
-  const distance = parseFloat(document.getElementById('distance').value);
+  const distanceInput = document.getElementById('distance');
+  const distanceError = document.getElementById('distanceError');
+  const distance = parseFloat(distanceInput.value);
   const passengers = parseInt(document.getElementById('passengers').value) || 1;
   const transport = document.getElementById('transport').value;
   const isRoundTrip = document.getElementById('roundTrip').checked;
@@ -39,34 +79,47 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
   localStorage.setItem('lastTransport', transport);
 
   if (isNaN(distance) || distance <= 0) {
-    alert("Por favor, insira uma distância válida.");
+    distanceInput.classList.add('error');
+    distanceError.classList.add('visible');
     return;
   }
 
-  // 2. Fatores de Emissão (kg CO2 por km) - Estimativas médias
-  let factor = 0;
-  let isPublic = false;
+  // Desabilitar botão durante o carregamento
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calculando...';
 
-  switch(transport) {
-    case 'carro': factor = 0.19; break; // ~190g/km por veículo
-    case 'moto': factor = 0.10; break;  // ~100g/km por veículo
-    case 'onibus': factor = 0.04; isPublic = true; break; // ~40g/km por passageiro
-    case 'aviao': factor = 0.25; isPublic = true; break;  // ~250g/km por passageiro (voos curtos)
-    case 'trem': factor = 0.03; isPublic = true; break;   // ~30g/km por passageiro
-  }
-
-  // 3. Cálculo
-  let totalDist = distance * (isRoundTrip ? 2 : 1);
+  // 2. Chamar API Backend
   let totalEmissions = 0;
+  let treesNeeded = 0;
+  let comparisonData = {};
+  let breakdownData = { base: 0, extra: 0 };
 
-  if (isPublic) {
-    // No transporte público, o fator costuma ser "por passageiro"
-    totalEmissions = totalDist * factor * passengers;
-  } else {
-    // No transporte privado, a emissão é do veículo.
-    // Se 4 pessoas viajarem em um carro, a emissão TOTAL é a mesma,
-    // mas aqui calculamos o impacto total gerado pela viagem.
-    totalEmissions = totalDist * factor;
+  try {
+    const response = await fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ distance, passengers, transport, isRoundTrip })
+    });
+    
+    if (!response.ok) throw new Error('Erro na API');
+    
+    const result = await response.json();
+    totalEmissions = result.emissions;
+    treesNeeded = result.trees;
+    comparisonData = result.comparisonData;
+    breakdownData = result.breakdown;
+
+    // Guardar en historial
+    addToHistory(transport, distance, isRoundTrip, passengers, totalEmissions);
+
+  } catch (error) {
+    console.error(error);
+    alert('Erro ao conectar com o servidor. Verifique se o backend está rodando.');
+    return;
+  } finally {
+    // Reabilitar botão (sempre executa, sucesso ou erro)
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
   }
 
   // 4. Mostrar Resultados com Animação
@@ -83,7 +136,7 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
   resultEl.innerHTML = `
     Emissão Total: <strong id="emissionValue">0.00</strong> <strong>kg CO₂</strong><br>
     <span style="font-size:0.85em; font-weight:normal; opacity:0.8">
-      (${totalDist} km ${isRoundTrip ? 'ida e volta' : ''}, ${passengers} pass.)
+      (${distance * (isRoundTrip ? 2 : 1)} km ${isRoundTrip ? 'ida e volta' : ''}, ${passengers} pass.)
     </span>
   `;
 
@@ -105,7 +158,6 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
   comparisonEl.classList.remove('hidden');
   treeContainer.innerHTML = ''; // Limpiar anterior
 
-  const treesNeeded = totalEmissions / 22; 
   // Mostrar hasta 10 árboles visualmente para no saturar
   const visualTrees = Math.min(Math.ceil(treesNeeded), 10);
   
@@ -129,25 +181,16 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
   const ctx = document.getElementById('comparisonChart').getContext('2d');
   
   // Dados para comparação
-  const transportTypes = ['carro', 'moto', 'onibus', 'aviao', 'trem'];
-  const labels = ['Carro', 'Moto', 'Ônibus', 'Avião', 'Trem'];
+  const transportTypes = Object.keys(transportConfig);
+  const labels = transportTypes.map(type => transportConfig[type].label);
   
   // Calcular emissões para todos os tipos para comparar
-  const data = transportTypes.map(type => {
-    let f = 0;
-    let isPub = false;
-    switch(type) {
-      case 'carro': f = 0.19; break;
-      case 'moto': f = 0.10; break;
-      case 'onibus': f = 0.04; isPub = true; break;
-      case 'aviao': f = 0.25; isPub = true; break;
-      case 'trem': f = 0.03; isPub = true; break;
-    }
-    return isPub ? (totalDist * f * passengers) : (totalDist * f);
-  });
+  const chartData = transportTypes.map(type => comparisonData[type]);
 
   // Cores: destacar o selecionado
-  const bgColors = transportTypes.map(t => t === transport ? '#16a34a' : '#e5e7eb');
+  const isDark = document.body.classList.contains('dark-mode');
+  const baseColor = isDark ? '#374151' : '#e5e7eb';
+  const bgColors = transportTypes.map(t => t === transport ? '#16a34a' : baseColor);
 
   if (myChart) myChart.destroy();
 
@@ -157,7 +200,7 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
       labels: labels,
       datasets: [{
         label: 'Emissões (kg CO₂)',
-        data: data,
+        data: chartData,
         backgroundColor: bgColors,
         borderRadius: 4
       }]
@@ -185,10 +228,6 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
   // 7. Gerar Gráfico de Rosca (Breakdown: Distância vs Passageiros)
   const ctxPie = document.getElementById('breakdownChart').getContext('2d');
   
-  // Cálculo: No transporte público, cada passageiro soma. No privado, o veículo emite o mesmo.
-  let baseEmission = isPublic ? (totalDist * factor) : totalEmissions;
-  let extraEmission = Math.max(0, totalEmissions - baseEmission);
-
   if (myPieChart) myPieChart.destroy();
 
   myPieChart = new Chart(ctxPie, {
@@ -196,7 +235,7 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
     data: {
       labels: ['Distância (Base)', 'Passageiros Extras'],
       datasets: [{
-        data: [baseEmission, extraEmission],
+        data: [breakdownData.base, breakdownData.extra],
         backgroundColor: ['#16a34a', '#bbf7d0'],
         borderWidth: 0,
         hoverOffset: 4
@@ -221,6 +260,13 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
 
   // Mostrar botão de download
   document.getElementById('downloadBtn').classList.remove('hidden');
+
+  // Limpar formulário automaticamente (mantendo o transporte e resultados)
+  isAutoReset = true;
+  const currentTransport = document.getElementById('transport').value;
+  document.getElementById('calcForm').reset();
+  document.getElementById('transport').value = currentTransport;
+  isAutoReset = false;
 });
 
 // Funcionalidade de download
@@ -228,6 +274,7 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   const captureArea = document.getElementById('captureArea');
   html2canvas(captureArea, {
     backgroundColor: '#f0fdf4', // Cor de fundo do tema
+    backgroundColor: document.body.classList.contains('dark-mode') ? '#1e293b' : '#f0fdf4',
     scale: 2 // Mayor calidad
   }).then(canvas => {
     const link = document.createElement('a');
@@ -248,3 +295,99 @@ function animateValue(obj, start, end, duration) {
   };
   window.requestAnimationFrame(step);
 }
+
+// --- Lógica de Tema Oscuro ---
+const themeToggleBtn = document.getElementById('themeToggle');
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  }
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  
+  // Guardar preferencia
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  
+  // Cambiar icono
+  themeToggleBtn.innerHTML = isDark 
+    ? '<i class="fa-solid fa-sun"></i>' 
+    : '<i class="fa-solid fa-moon"></i>';
+    
+  // Atualizar gráfico se existir
+  if (myChart) {
+    const selectedTransport = document.getElementById('transport').value;
+    const transportTypes = Object.keys(transportConfig);
+    const baseColor = isDark ? '#374151' : '#e5e7eb';
+    
+    myChart.data.datasets[0].backgroundColor = transportTypes.map(t => 
+      t === selectedTransport ? '#16a34a' : baseColor
+    );
+    myChart.update();
+  }
+});
+
+// --- Lógica de Historial ---
+const MAX_HISTORY = 5;
+
+function addToHistory(transportKey, dist, isRound, pass, emissions) {
+  const label = transportConfig[transportKey] ? transportConfig[transportKey].label : transportKey;
+  const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  
+  const entry = {
+    date,
+    transport: label,
+    details: `${dist}km${isRound ? ' (x2)' : ''}, ${pass}p`,
+    emissions: emissions.toFixed(2)
+  };
+
+  // Obtener actual
+  let history = JSON.parse(localStorage.getItem('co2_history') || '[]');
+  
+  // Agregar al inicio
+  history.unshift(entry);
+  
+  // Mantener solo 5
+  if (history.length > MAX_HISTORY) history.pop();
+  
+  // Guardar
+  localStorage.setItem('co2_history', JSON.stringify(history));
+  
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem('co2_history') || '[]');
+  const tbody = document.querySelector('#historyTable tbody');
+  const section = document.getElementById('historySection');
+
+  if (history.length === 0) {
+    section.classList.add('hidden');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  tbody.innerHTML = history.map(item => `
+    <tr>
+      <td>${item.date}</td>
+      <td>
+        <div style="font-weight:500">${item.transport}</div>
+        <div style="font-size:0.75em; opacity:0.7">${item.details}</div>
+      </td>
+      <td><strong>${item.emissions} kg</strong></td>
+    </tr>
+  `).join('');
+}
+
+// Botão de limpar histórico
+document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+  if (confirm('Tem certeza que deseja apagar todo o histórico?')) {
+    localStorage.removeItem('co2_history');
+    renderHistory();
+  }
+});
